@@ -62,13 +62,13 @@ void SystemClock_Config(void);
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-	int ledState = 0;
 	int counter  = 0;
 	typedef enum{
 		RED,
 		GREEN,
 		YELLOW
 	} TrafficlightState;
+	TrafficlightState currentState = RED;
 
   /* USER CODE END 1 */
 
@@ -100,21 +100,39 @@ int main(void)
   // loop
   while (1)
   {
-	  if (ledState == 0) {
-	        // If LED is off, turn it on after 2 seconds
-	        if (counter == 2) {  // 2 seconds
-	            HAL_GPIO_WritePin(DEBUG_LED_GPIO_Port, DEBUG_LED_Pin, GPIO_PIN_SET); // Assume DEBUG_LED is LED3
-	            ledState = 1; // Change state to on
-	            counter = 0; // Reset counter
-	        }
-	    } else {
-	        // If LED is on, turn it off after 4 seconds
-	        if (counter == 4) {  // 4 seconds
-	            HAL_GPIO_WritePin(DEBUG_LED_GPIO_Port, DEBUG_LED_Pin, GPIO_PIN_RESET);
-	            ledState = 0; // Change state to off
-	            counter = 0; // Reset counter
-	        }
-	    }
+	  switch (currentState) {
+	          case RED:
+	              // Bật đèn đỏ, tắt các đèn khác
+	              HAL_GPIO_WritePin(OUTPUT_Y0_GPIO_Port, OUTPUT_Y0_Pin, GPIO_PIN_SET);
+	              HAL_GPIO_WritePin(OUTPUT_Y1_GPIO_Port, OUTPUT_Y1_Pin, GPIO_PIN_SET);
+	              HAL_GPIO_WritePin(DEBUG_LED_GPIO_Port, DEBUG_LED_Pin, GPIO_PIN_SET);
+	              if (counter >= 5) { // 5 giây cho đèn đỏ
+	                  currentState = GREEN;
+	                  counter = 0; // Đặt lại đếm
+	              }
+	              break;
+	          case GREEN:
+	              // Bật đèn xanh, tắt các đèn khác
+	              HAL_GPIO_WritePin(OUTPUT_Y0_GPIO_Port, OUTPUT_Y0_Pin, GPIO_PIN_RESET);
+	              HAL_GPIO_WritePin(OUTPUT_Y1_GPIO_Port, OUTPUT_Y1_Pin, GPIO_PIN_SET);
+	              HAL_GPIO_WritePin(DEBUG_LED_GPIO_Port, DEBUG_LED_Pin, GPIO_PIN_RESET);
+	              if (counter >= 3) { // 3 giây cho đèn xanh
+	                  currentState = YELLOW;
+	                  counter = 0; // Đặt lại đếm
+	              }
+	              break;
+	          case YELLOW:
+	              // Bật đèn vàng, tắt các đèn khác
+	              HAL_GPIO_WritePin(OUTPUT_Y0_GPIO_Port, OUTPUT_Y0_Pin, GPIO_PIN_RESET);
+	              HAL_GPIO_WritePin(OUTPUT_Y1_GPIO_Port, OUTPUT_Y1_Pin, GPIO_PIN_RESET);
+	              HAL_GPIO_WritePin(DEBUG_LED_GPIO_Port, DEBUG_LED_Pin, GPIO_PIN_SET);
+	              if (counter >= 1) { // 1 giây cho đèn vàng
+	                  currentState = RED;
+	                  counter = 0; // Đặt lại đếm
+	              }
+	              break;
+	      }
+
 	  HAL_Delay(1000);
 	  counter++;
 
